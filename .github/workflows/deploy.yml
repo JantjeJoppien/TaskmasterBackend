@@ -1,0 +1,30 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP_ADDRESS }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+
+          script: |
+            cd /var/www/joppien.dev
+
+            echo "📥 Pull latest code"
+            git pull
+
+            echo "🐳 Rebuild containers"
+            docker compose up -d --build
+
+            echo "🧹 Cleanup"
+            docker image prune -f
